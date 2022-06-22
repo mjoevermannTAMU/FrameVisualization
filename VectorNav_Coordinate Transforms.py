@@ -69,17 +69,15 @@ while True:
         vector = R_init[:, i]
         ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color='b')
         ax.text(vector[0], vector[1], vector[2], f2_label[i], color='b')
-    for i in range(3):
-        vector = f1_pose[:, i]
-        ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color='g')
-        ax.text(vector[0], vector[1], vector[2], f1_label[i], color='g')
-    for i in range(3):
-        vector = f0_pose[:, i]
-        ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color = 'r')
-        ax.text(vector[0], vector[1], vector[2], f0_label[i], color='r')
-    prev1 = angles.theta_1
-    prev2 = angles.theta_2
-    plt.show(block=False)
+    # for i in range(3):
+    #     vector = f1_pose[:, i]
+    #     ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color='g')
+    #     ax.text(vector[0], vector[1], vector[2], f1_label[i], color='g')
+    # for i in range(3):
+    #     vector = f0_pose[:, i]
+    #     ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color = 'r')
+    #     ax.text(vector[0], vector[1], vector[2], f0_label[i], color='r')
+        plt.show(block=False)
 
 
 
