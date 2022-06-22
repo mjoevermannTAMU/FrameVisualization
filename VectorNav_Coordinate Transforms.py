@@ -33,8 +33,8 @@ angles = Angles()
 # NED quaternion
 # these s0, v0 sets are copied from the vn-100 terminal outputs as examples
 # at base frame
-v0 = np.array([0.001888,-0.001684,0.032691])
-s0 = 0.999462
+# v0 = np.array([0.001888,-0.001684,0.032691])
+# s0 = 0.999462
 
 # rotated 103 degrees about the negative yaw axis
 # v0 = np.array([-0.002327,0.001020,-0.783365])
