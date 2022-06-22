@@ -12,7 +12,7 @@ f1_label = ['x_1', 'y_1', 'z_1: Pipe']
 f0_label = ['x_0: down', 'y_0', 'z_0']
 fig = plt.figure()
 
-# how an I going to find th_1?
+# todo how an I going to find th_1?
 
 # set up a slider window
 sliderWindow = tk.Tk()
