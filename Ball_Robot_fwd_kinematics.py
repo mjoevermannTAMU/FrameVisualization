@@ -5,7 +5,7 @@ import tkinter as tk
 
 #plot settings
 origin = [0,0,0]
-f2_label = ['x_2: mass', 'y_2', 'z_2']
+f2_label = ['x_2: Mass', 'y_2', 'z_2']
 f1_label = ['x_1', 'y_1', 'z_1: Lamprey']
 f0_label = ['x_0', 'y_0', 'z_0: Pipe']
 fig = plt.figure()
