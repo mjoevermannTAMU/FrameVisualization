@@ -12,8 +12,8 @@ fig = plt.figure()
 
 # set up a slider window
 sliderWindow = tk.Tk()
-sliderWindow.geometry('300x300')
-sliderWindow.title('Encoder Value Slider')
+sliderWindow.geometry('300x350')
+sliderWindow.title('Angle Sliders')
 encoder_value = tk.DoubleVar()
 tip_value = tk.DoubleVar()
 yaw_value = tk.DoubleVar()
@@ -26,6 +26,7 @@ class Angles:
     theta_2 = 0.0
     elevation = 0.0
     azimuth = 0.0
+    status = True
     def update_th1(self, x):
         self.theta_1 = float(x)*np.pi/180
         print(f'Theta 1 was updated to {self.theta_1}')
@@ -41,6 +42,8 @@ class Angles:
     def update_azi(self, x):
         self.azimuth = float(x)
         print(f'Theta 0 was updated to {self.azimuth}')
+    def stop_status(self):
+        self.status = False
 angles = Angles()
 
 val = tk.Scale(sliderWindow, from_=-179, to=-91, variable=elev_value, orient='horizontal', label='Set Elevation Angle (deg)', length=300, command=angles.update_elev)
@@ -55,9 +58,11 @@ val = tk.Scale(sliderWindow, from_=-90, to=90, variable=tip_value, orient='horiz
 val.pack()
 val = tk.Scale(sliderWindow, from_=-60, to=60, variable=encoder_value, orient='horizontal', label='Set Steer Angle (deg)', length=300, command=angles.update_th2)
 val.pack()
+B = tk.Button(sliderWindow, text="Stop Program", command=angles.stop_status)
+B.pack()
 
 # loop the animation
-while True:
+while angles.status:
     # read in the pendulum orientation from the trackbars
     sliderWindow.update_idletasks()
     sliderWindow.update()
