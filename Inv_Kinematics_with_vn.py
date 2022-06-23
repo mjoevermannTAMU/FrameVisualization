@@ -18,6 +18,7 @@ sliderWindow.geometry('300x300')
 sliderWindow.title('Encoder Value Slider')
 elev_value = tk.DoubleVar()
 azim_value = tk.DoubleVar()
+encoder_value = tk.DoubleVar()
 
 # create class to update anf track angles
 class Angles:
@@ -29,19 +30,19 @@ class Angles:
     status = True
     def update_th1(self, x):
         self.theta_1 = float(x)
-        print(f'Theta 1 was updated to {self.theta_1*180/np.pi}')
+        print(f'Drive was updated to {self.theta_1*180/np.pi}')
     def update_th2(self, x):
         self.theta_2 = float(x)
-        print(f'Theta 2 was updated to {self.theta_2*180/np.pi}')
+        print(f'Steering was updated to {self.theta_2*180/np.pi}')
     def update_th0(self, x):
         self.theta_0 = float(x)
-        print(f'Theta 0 was updated to {self.theta_0*180/np.pi}')
+        print(f'Yaw was updated to {self.theta_0*180/np.pi}')
     def update_elev(self, x):
         self.elevation = float(x)
-        print(f'Theta 0 was updated to {self.elevation}')
+        print(f'Elevation was updated to {self.elevation}')
     def update_azi(self, x):
         self.azimuth = float(x)
-        print(f'Theta 0 was updated to {self.azimuth}')
+        print(f'Azimuth was updated to {self.azimuth}')
     def stop_status(self):
         self.status = False
 angles = Angles()
@@ -55,6 +56,8 @@ val = tk.Scale(sliderWindow, from_=-179, to=-91, variable=elev_value, orient='ho
 val.set(-160) # initialize slider value
 val.pack()
 val = tk.Scale(sliderWindow, from_=-180, to=180, variable=azim_value, orient='horizontal', label='Set Azimuth Angle (deg)', length=300, command=angles.update_azi)
+val.pack()
+val = tk.Scale(sliderWindow, from_=-60, to=60, variable=encoder_value, orient='horizontal', label='Set Steer Angle (deg)', length=300, command=angles.update_th2)
 val.pack()
 B = tk.Button(sliderWindow, text="Stop Program", command=angles.stop_status)
 B.pack()
@@ -71,9 +74,15 @@ while angles.status:
     # find th1:
     angles.update_th1(np.arccos(f2_pose[2,2]))
     angles.update_th0(np.arccos(f2_pose[1,2] / np.sin(angles.theta_1)))
-    angles.update_th2(np.arccos(-f2_pose[2,1] / np.sin(angles.theta_1)))
+
+    # do some checks and fix angles
+    if -np.pi > angles.theta_1:
+        angles.update_th1(angles.theta_1 + np.pi)
+    if np.pi < angles.theta_1:
+        angles.update_th1(angles.theta_1 - np.pi)
+
     # calculate the frame positions
-    f1_pose = f2_pose @ Rz(-angles.theta_2)
+    f1_pose = f2_pose @ Rz(-angles.theta_2*np.pi/180)
     f0_pose = f1_pose @ Rx(-np.pi/2) @ Rz(angles.theta_1)
     fb_pose = f0_pose @ Ry(np.pi/2) @ Rz(angles.theta_0)
 
