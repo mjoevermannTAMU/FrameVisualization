@@ -47,6 +47,7 @@ def quat2rot(real, vec): # quaternion to rotation matrix
                      [r31, r32, r33]])
 
 class Ball:
+    # class to hold the dynamic EOM of the ball
     def __init__(self, R_ball, r_pend, m_ball, m_pend, I_ball):
         self.R_ball = R_ball
         self.r_pend = r_pend
