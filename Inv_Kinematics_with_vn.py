@@ -32,7 +32,7 @@ class Angles:
         self.theta_1 = float(x)
         print(f'Drive was updated to {self.theta_1*180/np.pi}')
     def update_th2(self, x):
-        self.theta_2 = float(x)
+        self.theta_2 = float(x)*np.pi/180
         print(f'Steering was updated to {self.theta_2*180/np.pi}')
     def update_th0(self, x):
         self.theta_0 = float(x)
@@ -49,7 +49,7 @@ angles = Angles()
 
 # initialize the vn sensor
 vn = VnSensor()
-vn.connect('COM5', 921600) # COM# will change with computer. This one works from the from of my Anker docking station
+vn.connect('COM8', 921600) # COM# will change with computer. This one works from the from of my Anker docking station
 
 # Trackbars
 val = tk.Scale(sliderWindow, from_=-179, to=-91, variable=elev_value, orient='horizontal', label='Set Elevation Angle (deg)', length=300, command=angles.update_elev)
@@ -70,21 +70,15 @@ while angles.status:
     data = vn.read_quaternion_magnetic_acceleration_and_angular_rates()
     f2_pose = quat2rot(data.quat.w , np.array([data.quat.x, data.quat.y, data.quat.z])) # converts vn data to rot frame aka desired pose
 
-    # carry out the inv kinematics to find the program angles
-    # find th1:
-    angles.update_th1(np.arccos(f2_pose[2,2]))
-    angles.update_th0(np.arccos(f2_pose[1,2] / np.sin(angles.theta_1)))
-
-    # do some checks and fix angles
-    if -np.pi > angles.theta_1:
-        angles.update_th1(angles.theta_1 + np.pi)
-    if np.pi < angles.theta_1:
-        angles.update_th1(angles.theta_1 - np.pi)
 
     # calculate the frame positions
-    f1_pose = f2_pose @ Rz(-angles.theta_2*np.pi/180)
-    f0_pose = f1_pose @ Rx(-np.pi/2) @ Rz(angles.theta_1)
-    fb_pose = f0_pose @ Ry(np.pi/2) @ Rz(angles.theta_0)
+    # undo steering to reference f1
+    f1_pose = f2_pose @ Rz(-angles.theta_2)
+
+    # find angle between f1 and down, this is drive angle
+    angles.update_th1(np.arccos(np.dot(f1_pose[:,0], np.array([0,0,1]))/ (np.linalg.norm(f1_pose[:,0]))))
+    f0_pose = f1_pose @ Rx(-np.pi/2) @ Rz(-angles.theta_1)
+    #fb_pose = f0_pose @ Ry(np.pi/2) @ Rz(angles.theta_0)
 
     fig.clear()
     ax = plt.axes(projection="3d")
@@ -107,8 +101,8 @@ while angles.status:
         vector = f0_pose[:, i]
         ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color = 'r')
         ax.text(vector[0], vector[1], vector[2], f0_label[i], color='r')
-    for i in range(3):
-        vector = fb_pose[:, i]
-        ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color = 'k')
-        ax.text(vector[0], vector[1], vector[2], fb_label[i], color='k')
+    # for i in range(3):
+    #     vector = fb_pose[:, i]
+    #     ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color = 'k')
+    #     ax.text(vector[0], vector[1], vector[2], fb_label[i], color='k')
     plt.show(block=False)
