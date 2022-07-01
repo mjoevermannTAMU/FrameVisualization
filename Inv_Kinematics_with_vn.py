@@ -49,7 +49,7 @@ angles = Angles()
 
 # initialize the vn sensor
 vn = VnSensor()
-vn.connect('COM8', 921600) # COM# will change with computer. This one works from the from of my Anker docking station
+vn.connect('COM5', 921600) # COM# will change with computer. This one works from the from of my Anker docking station
 
 # Trackbars
 val = tk.Scale(sliderWindow, from_=-179, to=-91, variable=elev_value, orient='horizontal', label='Set Elevation Angle (deg)', length=300, command=angles.update_elev)
@@ -101,7 +101,7 @@ while angles.status:
         vector = f0_pose[:, i]
         ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color = 'r')
         ax.text(vector[0], vector[1], vector[2], f0_label[i], color='r')
-    # for i in range(3):
+    #for i in range(3):
     #     vector = fb_pose[:, i]
     #     ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color = 'k')
     #     ax.text(vector[0], vector[1], vector[2], fb_label[i], color='k')
