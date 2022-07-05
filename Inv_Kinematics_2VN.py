@@ -26,12 +26,14 @@ encoder_value = tk.DoubleVar()
 
 # create class to update anf track angles
 class Angles:
-    theta_0 = 0.0
-    theta_1 = 0.0
-    theta_2 = 0.0
-    elevation = 0.0
+    theta_0 = 0.0 # pipe yawing
+    theta_1 = 0.0 # drive angle
+    theta_2 = 0.0 # steer angle
+    elevation = 0.0 # graph view options
     azimuth = 0.0
     status = True
+    pipe_angle_z = 0.0
+    pipe_angle_y = 0.0
     def update_th1(self, x):
         self.theta_1 = float(x)
         print(f'Drive was updated to {self.theta_1*180/np.pi}')
@@ -40,7 +42,7 @@ class Angles:
         print(f'Steering was updated to {self.theta_2*180/np.pi}')
     def update_th0(self, x):
         self.theta_0 = float(x)
-        print(f'Yaw was updated to {self.theta_0*180/np.pi}')
+        print(f'Pipe Yaw was updated to {self.theta_0*180/np.pi}')
     def update_elev(self, x):
         self.elevation = float(x)
         print(f'Elevation was updated to {self.elevation}')
@@ -49,6 +51,12 @@ class Angles:
         print(f'Azimuth was updated to {self.azimuth}')
     def stop_status(self):
         self.status = False
+    def update_pipe_z(self, x):
+        self.pipe_angle_z = round(x*180/np.pi, 2)
+    def update_pipe_y(self, x):
+        self.pipe_angle_y = round(x*180/np.pi, 2)
+    def get_message(self):
+        print(f"Pipe_z_angle: {self.pipe_angle_z} \nPipe_y_angle: {self.pipe_angle_y}\nDrive Angle: {self.theta_1*180/np.pi}")
 angles = Angles()
 
 # initialize the first vn sensor
@@ -67,6 +75,7 @@ val = tk.Scale(sliderWindow, from_=-60, to=60, variable=encoder_value, orient='h
 val.pack()
 B = tk.Button(sliderWindow, text="Stop Program", command=angles.stop_status)
 B.pack()
+
 # loop the animation
 f2_pose = np.zeros((3,3))
 while angles.status:
@@ -79,7 +88,7 @@ while angles.status:
     vn1_pose = quat2rot(data1.quat.w , np.array([data1.quat.x, data1.quat.y, data1.quat.z])) # converts vn data to rot frame aka desired pose
     vn2_pose = quat2rot(data2.quat.w , np.array([data2.quat.x, data2.quat.y, data2.quat.z]))
 
-    # average the directioin vectors of the sensors, this will be f2
+    # average the direction vectors of the sensors, this will be f2
     f2_pose[:,0] = (vn1_pose[:,0] + vn2_pose[:, 0])*0.5 # the y and z components are opposed
     f2_pose[:,1] = (vn1_pose[:,1] - vn2_pose[:, 1])*0.5
     f2_pose[:,2] = (vn1_pose[:,2] - vn2_pose[:, 2])*0.5
@@ -88,10 +97,14 @@ while angles.status:
     # undo steering to reference f1
     f1_pose = f2_pose @ Rz(-angles.theta_2)
 
-    # find angle between f1 and down, this is drive angle
-    angles.update_th1(np.arccos(np.dot(f1_pose[:,0], np.array([0,0,1]))/ (np.linalg.norm(f1_pose[:,0]))))
+    # find angle between f1 and down, this is drive angle (related to torque)
+    angles.update_th1(round(np.arccos(np.dot(f1_pose[:,0], np.array([0,0,1]))/ (np.linalg.norm(f1_pose[:,0]))), 2))
     f0_pose = f1_pose @ Rx(-np.pi/2) @ Rz(-angles.theta_1)
-    fb_pose = f0_pose @ Ry(np.pi/2) @ Rz(angles.theta_0)
+
+    # find angle between pipe (z_f0) and horizontal, this should be related to turning angle
+    angles.update_pipe_z(np.arccos(np.dot(f0_pose[:, 2], np.array([0, 0, 1])) / (np.linalg.norm(f0_pose[:, 2]))))
+    #angles.update_pipe_y(np.arccos(np.dot(f0_pose[:, 2], np.array([0, 1, 0])) / (np.linalg.norm(f0_pose[:, 2]))))
+    # fb_pose = f0_pose @ Ry(np.pi/2) @ Rz(angles.theta_0)
 
     fig.clear()
     ax = plt.axes(projection="3d")
@@ -126,4 +139,5 @@ while angles.status:
     #     vector = fb_pose[:, i]
     #     ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color = 'k')
     #     ax.text(vector[0], vector[1], vector[2], fb_label[i], color='k')
+    plt.title(f"Pipe_z_angle: {angles.pipe_angle_z} \nPipe_y_angle: {angles.pipe_angle_y}\nDrive Angle: {round(angles.theta_1*180/np.pi,2)}")
     plt.show(block=False)
