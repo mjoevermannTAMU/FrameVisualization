@@ -5,7 +5,7 @@ import tkinter as tk
 from vnpy import *
 '''This file is similar to Inv_Kinematics_with_vn.py in that is should have the same structure 
 however it will attempt to use and map 2 VN sensors instead of one'''
-
+# TODO: figure out how to tell the direction og the drive angle, projeting it? subracting something? signs of the vectors?
 #plot settings
 origin = [0,0,0]
 f2_label = ['x_2: Mass', 'y_2', 'z_2'] # the body labels of the pendulum
@@ -98,7 +98,8 @@ while angles.status:
     f1_pose = f2_pose @ Rz(-angles.theta_2)
 
     # find angle between f1 and down, this is drive angle (related to torque)
-    angles.update_th1(round(np.arccos(np.dot(f1_pose[:,0], np.array([0,0,1]))/ (np.linalg.norm(f1_pose[:,0]))), 2))
+    drive_sign = vn1_pose[2,2]/abs(vn1_pose[2,2])
+    angles.update_th1(round(drive_sign*np.arccos(np.dot(f1_pose[:,0], np.array([0,0,1]))/ (np.linalg.norm(f1_pose[:,0]))), 2))
     f0_pose = f1_pose @ Rx(-np.pi/2) @ Rz(-angles.theta_1)
 
     # find angle between pipe (z_f0) and horizontal, this should be related to turning angle
@@ -115,26 +116,28 @@ while angles.status:
     ax.set_zlabel('Down')
     ax.set_xlabel('North')
     ax.view_init(angles.elevation, angles.azimuth)
-    # for i in range(3):
-    #     vector = vn1_pose[:, i]
-    #     ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color='m')
-    #     ax.text(vector[0], vector[1], vector[2], vn1_label[i], color='m')
-    # for i in range(3):
-    #     vector = vn2_pose[:, i]
-    #     ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color='c')
-    #     ax.text(vector[0], vector[1], vector[2], vn2_label[i], color='c')
+    for i in range(3):
+        vector = vn1_pose[:, i]
+        ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color='m')
+        ax.text(vector[0], vector[1], vector[2], vn1_label[i], color='m')
+    print(f'vn1 z vector: {vn1_pose[:,2]}')
+    for i in range(3):
+        vector = vn2_pose[:, i]
+        ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color='c')
+        ax.text(vector[0], vector[1], vector[2], vn2_label[i], color='c')
+    print(f'vn2 z vector: {vn2_pose[:,2]}')
     for i in range(3):
         vector = f2_pose[:, i]
         ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color='b')
         ax.text(vector[0], vector[1], vector[2], f2_label[i], color='b')
-    for i in range(3):
-        vector = f1_pose[:, i]
-        ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color='g')
-        ax.text(vector[0], vector[1], vector[2], f1_label[i], color='g')
-    for i in range(3):
-        vector = f0_pose[:, i]
-        ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color = 'r')
-        ax.text(vector[0], vector[1], vector[2], f0_label[i], color='r')
+    # for i in range(3):
+    vector = f1_pose[:, 2]
+    ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color='g')
+    ax.text(vector[0], vector[1], vector[2], f1_label[2], color='g')
+    # for i in range(3): # only print pipe vector
+    vector = f0_pose[:, 2]
+    ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color = 'r')
+    ax.text(vector[0], vector[1], vector[2], f0_label[2], color='r')
     #for i in range(3):
     #     vector = fb_pose[:, i]
     #     ax.quiver(origin[0], origin[1], origin[2], vector[0], vector[1], vector[2], color = 'k')
