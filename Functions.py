@@ -2,7 +2,7 @@ import numpy as np
 from math import sin, cos
 
 def link_transform(theta, d, a, alpha):
-    # retrund the transform matrix for a row in the D-H Table
+    # return the transform matrix for a row in the D-H Table
     return np.array([[cos(theta), -sin(theta)*cos(alpha), sin(theta)*sin(alpha), a*cos(theta)],
                      [sin(theta), cos(theta)*cos(alpha), -cos(theta)*sin(alpha), a*sin(theta)],
                      [0, sin(alpha), cos(alpha), d],
