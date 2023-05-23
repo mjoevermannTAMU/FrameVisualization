@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from Functions import Rx, Ry, Rz, quat2rot
 import tkinter as tk
 
+print ("change")
 #plot settings
 origin = [0,0,0]
 f2_label = ['x_2: Mass', 'y_2', 'z_2']
