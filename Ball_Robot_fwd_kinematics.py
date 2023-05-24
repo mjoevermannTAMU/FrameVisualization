@@ -10,6 +10,7 @@ f1_label = ['x_1', 'y_1', 'z_1: Lamprey']
 f0_label = ['x_0', 'y_0', 'z_0: Pipe']
 fig = plt.figure()
 
+<<<<<<< Updated upstream
 # set up a slider window
 sliderWindow = tk.Tk()
 sliderWindow.geometry('300x350')
@@ -19,6 +20,10 @@ tip_value = tk.DoubleVar()
 yaw_value = tk.DoubleVar()
 elev_value = tk.DoubleVar()
 azim_value = tk.DoubleVar()
+=======
+#figures for showing data
+vector_figure = plt.figure()
+>>>>>>> Stashed changes
 
 class Angles:
     theta_0 = 0.0
@@ -62,10 +67,50 @@ B = tk.Button(sliderWindow, text="Stop Program", command=angles.stop_status)
 B.pack()
 
 # loop the animation
+<<<<<<< Updated upstream
 while angles.status:
     # read in the pendulum orientation from the trackbars
     sliderWindow.update_idletasks()
     sliderWindow.update()
+=======
+row_count = 1 #row you're on
+frame_interval = 50 #runs every 50th frame
+
+while angles.status:
+    # read in the pendulum orientation from the trackbars
+    slider_window.update_window()
+    if angles.cycle:
+        if (len(data_rows) - row_count) > frame_interval:
+            drive_angle = float(data_rows[row_count][1]) * 180/np.pi
+            angles.update_th1(drive_angle)
+
+            steer_angle = float(data_rows[row_count][2]) * 180/np.pi
+            angles.update_th2(steer_angle)
+            row_count += frame_interval
+
+        elif (len(data_rows) - row_count - 1) <= frame_interval:
+            drive_angle = float(data_rows[row_count][1]) * 180 / np.pi
+            angles.update_th1(drive_angle)
+
+            steer_angle = float(data_rows[row_count][2]) * 180 / np.pi
+            angles.update_th2(steer_angle)
+            row_count += 1
+            
+        else:
+            break
+
+    #update vector figure
+    vector_figure.clear()
+    ax = vector_figure.add_subplot(111, projection="3d")
+    ax.set_title("3D plot")
+    ax.set_xlim([-1.5, 1.5])
+    ax.set_ylim([-1.5, 1.5])
+    ax.set_zlim([-1.5, 1.5])
+    ax.set_ylabel('East', color='black')
+    ax.set_zlabel('Down')
+    ax.set_xlabel('North')
+    ax.view_init(angles.elevation, angles.azimuth)
+>>>>>>> Stashed changes
 
     # calculate the orientation of the frames, f0, f1, f2
     f0_pose = Rz(angles.theta_0) @ Ry(-np.pi/2)
