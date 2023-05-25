@@ -4,12 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
-from matplotlib.widgets import *
-import matplotlib
+from matplotlib.widgets import Slider
 import csv
 import time
-
-plt.ion() #suposedly interactive mode
 
 data = open('scary_data.csv')
 type(data)
@@ -53,10 +50,6 @@ class EasyBox:
         box_x = np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * half_width + self.center[0]
         box_y = np.array([1, 1, -1, -1, 1, 1, -1, -1]) * half_height + self.center[1]
         box_z = np.array([1, 1, 1, 1, -1, -1, -1, -1]) * half_depth + self.center[2]
-
-        self.x_rotation = float(self.x_rotation)
-        self.y_rotation = float(self.y_rotation)
-        self.z_rotation = float(self.z_rotation)
 
         # Apply rotations
         rotation_matrix_x = np.array([[1, 0, 0],
@@ -188,7 +181,7 @@ class EasyDrawer:
             sphere.plot(sphere.x_rotation, sphere.y_rotation, sphere.z_rotation)
 
     def show_objects(self):
-        self.ax.cla()  # Clear the previous plot
+        model.ax.cla()  # Clear the previous plot
         self.update_objects()
 
         self.ax.set_xlabel('X')
@@ -199,31 +192,21 @@ class EasyDrawer:
         self.ax.set_ylim(-12, 12)
         self.ax.set_zlim(-12, 12)
 
-        drive_angle = round(float(x_angle),2)
-        drive_text = "Drive Angle: " + str(drive_angle)
-        pipe_angle = round(float(z_angle - 90), 2)
-        pipe_text = "Pipe Angle: " + str(pipe_angle)
-        self.ax.text2D(x=-0.1, y=-0.11, s=drive_text, fontsize = 20)
-        self.ax.text2D(x=0.03, y=-0.11, s=pipe_text, fontsize=20)
-
-        update_rotation(0)
-
         #self.ax.view_init(elev=90, azim=0)
-        self.fig.show()
-        plt.pause(0.001)
+        plt.show()
 
 # Create a function to update the sphere's y_rotation based on the slider value
 def update_rotation(val):
     for box in model.boxes:
-        box.x_rotation = x_angle
+        box.x_rotation = x_rotation_slider.val
 
-    pendulum2.z_rotation = (float(z_angle)-90) * -math.cos(math.radians(float(x_angle)-90))
-    pendulum2.y_rotation = (float(z_angle)-90) * -math.sin(math.radians(float(x_angle)-90))
+    pendulum2.z_rotation = (z_rotation_slider.val-90) * -math.cos(math.radians(x_rotation_slider.val-90))
+    pendulum2.y_rotation = (z_rotation_slider.val-90) * -math.sin(math.radians(x_rotation_slider.val-90))
+
+    model.show_objects()
 
 # Create an instance of EasyDrawer
 model = EasyDrawer(figsize=(8, 8))
-#model.fig.show()
-#plt.ion()
 
 sphere = model.add_sphere(center=[0, 0, 12], radius=12)
 pendulum1 = model.add_box(center=[0, 0, 0], rotation_center=[0,0,1.5], width=2, height=2, depth=2, color=(1,0.3,0.3,0.5))
@@ -231,18 +214,29 @@ pendulum2 = model.add_box(center=[0, 0, 0], rotation_center=[0,0,5], width=2, he
 rod = model.add_box(center=[0, 0, 0], rotation_center=[0,0,0], width=24, height=1, depth=1,color=(0.5,0.5,1,0.3))
 rod.x_rotation = 90
 
-x_angle, y_angle, z_angle = 90.0, 90.0, 90.0
+y_rotation_ax = plt.axes([0.2, 0.1, 0.6, 0.05])
+y_rotation_slider = Slider(y_rotation_ax, 'Y Rotation Angle', 0, 180, valinit=90)
+
+# Create a slider for x_rotation
+x_rotation_ax = plt.axes([0.2, 0.05, 0.6, 0.05])
+x_rotation_slider = Slider(x_rotation_ax, 'X Rotation Angle', 0, 180, valinit=90)
+
+z_rotation_ax = plt.axes([0.2, 0.0, 0.6, 0.05])
+z_rotation_slider = Slider(z_rotation_ax, 'Z Rotation Angle', 0, 180, valinit=90)
+
+y_rotation_slider.on_changed(update_rotation)
+x_rotation_slider.on_changed(update_rotation)
+z_rotation_slider.on_changed(update_rotation)
 
 for frame in range(len(times)):
     #model.fig.clear()
     # Update the slider value to the current angle
-    x_angle = float(math.degrees(float(drive_angles[frame])))
-    z_angle = float(math.degrees(float(pipe_angles[frame]))) + 90
+    x_rotation_slider.value = drive_angles[frame]
+    z_rotation_slider.value = pipe_angles[frame]
 
     # Wait for a short duration to allow for slider update
     time.sleep(0.1)
 
     # Perform any desired operations with the updated slider value
     # ...
-    print(frame)
     model.show_objects()
