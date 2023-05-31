@@ -11,7 +11,7 @@ import time
 
 plt.ion() #suposedly interactive mode
 
-data = open('scary_data.csv')
+data = open('scary_data_good_part.csv')
 type(data)
 csvreader = csv.reader(data)
 
@@ -20,12 +20,12 @@ for row in csvreader:
     data_rows.append(row)
 
 row_count = 1  # row you're on
-frame_interval = 50  # runs every 50th frame
+frame_interval = 20  # runs every 50th frame
 
 times, drive_angles, pipe_angles = [], [], []
 
 for row in data_rows:
-    if (row_count % frame_interval == 0):
+    if (row_count > 1 and row_count % frame_interval == 0):
         times.append(row[0])
         drive_angles.append(row[1])
         pipe_angles.append(row[2])
@@ -206,17 +206,18 @@ class EasyDrawer:
         self.ax.text2D(x=-0.1, y=-0.11, s=drive_text, fontsize = 20)
         self.ax.text2D(x=0.03, y=-0.11, s=pipe_text, fontsize=20)
 
-        text_time = "time (s): " + str(round(float(time), 2))
+        text_time = "time (s?): " + str(round(float(time), 2))
         self.ax.text2D(x=-0.1, y=0.1, s=text_time, fontsize=20)
 
         update_rotation(0)
 
         self.fig.show()
-        plt.pause(0.001)
+        plt.pause(pause_time)
 
-def time_to_seconds(time_str):
-    minutes, seconds = time_str.split(':')
-    total_seconds = float(minutes) * 60 + float(seconds)
+def time_to_milliseconds(time_str):
+    print("time:", time_str)
+    seconds, milliseconds = time_str.split(':')
+    total_seconds = float(seconds) * 60 + float(milliseconds)
     return total_seconds
 
 # Create a function to update the sphere's y_rotation based on the slider value
@@ -236,24 +237,21 @@ model.ax.view_init(elev=30, azim=130)
 
 sphere = model.add_sphere(center=[0, 0, 12], radius=12)
 pendulum1 = model.add_box(center=[0, 0, 0], rotation_center=[0,0,1.5], width=2, height=2, depth=2, color=(1,0.3,0.3,0.5))
-pendulum2 = model.add_box(center=[0, 0, 0], rotation_center=[0,0,5], width=2, height=2, depth=5, color=(1,0.3,0.3,0.5))
+pendulum2 = model.add_box(center=[0, 0, 0], rotation_center=[0,0,5], width=2, height=2, depth=6, color=(1,0.3,0.3,0.5))
 rod = model.add_box(center=[0, 0, 0], rotation_center=[0,0,0], width=24, height=1, depth=1,color=(0.5,0.5,1,0.3))
 rod.x_rotation = 90
 
 x_angle, y_angle, z_angle = 90.0, 90.0, 90.0
 
 time = 0
-first_time = time_to_seconds(times[0])
+first_time = time_to_milliseconds(times[0])
+pause_time = 0.0001
 
 for frame in range(len(times)):
     #model.fig.clear()
     # Update the slider value to the current angle
     x_angle = float(math.degrees(float(drive_angles[frame])))
     z_angle = float(math.degrees(float(pipe_angles[frame]))) + 90
-    time = time_to_seconds(times[frame]) - first_time
+    time = time_to_milliseconds(times[frame]) - first_time
 
-    # Wait for a short duration to allow for slider update
-    # Perform any desired operations with the updated slider value
-    # ...
-    print(frame)
     model.show_objects()
